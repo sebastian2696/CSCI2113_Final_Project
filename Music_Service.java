@@ -1,11 +1,14 @@
 import jm.audio.*;
 import jm.JMC;
-import jm.music.*;
+import jm.music.tools.*;
+import jm.music.rt.*;
+import jm.music.net.*;
+import jm.music.data.*;
 import jm.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-public class GetAudioFile extends JFrame implements ActionListener
+public class Music_Service extends JFrame implements ActionListener
 {
 	JTextField text;
 	JTextArea area;
@@ -36,7 +39,7 @@ public class GetAudioFile extends JFrame implements ActionListener
 	}
 	public static void main(String[] args)
 	{
-		GetAudioFile newWindow = new GetAudioFile();
+		Music_Service newWindow = new Music_Service();
 		newWindow.go();
 	}
 }
