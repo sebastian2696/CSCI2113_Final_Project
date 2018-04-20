@@ -40,12 +40,4 @@ public class LLMusic{
             for (Song content:songLL)
                 System.out.println(content.Song_Title);
         }
-
-//        public static void main(String[] args){
-//            LLMusic list = new LLMusic();
-//            Song song = new Song("A", "B", "C", "D", "E");
-//            list.Song_Add(song);
-
-//            list.LL_Content();
-//        }
 }
