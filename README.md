@@ -10,7 +10,7 @@ Your music player will allow you to enter the following information for each son
 - Album Name
 - Song Title
 - Filename for Song
-- Filename for album cover art
+- Filename for Album Cover Art
 
 
 You should be able to add a number of songs to a list, and you should have two buttons on your main interface. Play next song and Play random song. The play next song button should play the next song in your list in the order the song was added. Play random song should choose a random song in your list.
