@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import javax.swing.*;
-public class ServerMusic extends JFrame implements ActionListener, Runnable{
+import java.util.*;
+
+public class ServerMusic extends JFrame implements Runnable{
     JTextArea textArea;
     InputStreamReader isr;
     OutputStreamWriter outWriter;
@@ -15,13 +17,22 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     ServerSocket serverSock;
     boolean connected = false;
 
+    ArrayList<Integer> map;
+    int mapIndex = 0;
+
     // Buttons
     JButton nextsongButton;
+    JButton nextsong2Button;
     JButton playButton;
+    JButton play2Button;
+    JButton moveupButton;
+    JButton movedownButton;
 
     // Strings for the buttons
-    private static String nextsongString = "Save and New";
+    private static String nextsongString = "Add Song";
     private static String playString = "Play";
+    private static String moveupString = "Move Up";
+    private static String movedownString = "Move Down";
 
     // Labels to identify the fields
     JLabel artistLabel;
@@ -42,12 +53,15 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     JTextField albumField;
     JTextField songtitleField;
     JTextField filepathField;
-	JTextField imagepathField;
+    JTextField imagepathField;
 
     // Panels
     JPanel fieldPane;
     JPanel labelPane;
     JPanel buttonPane;
+    JPanel button2Pane;
+    JPanel movebuttonPane;
+    JPanel textPane;
 
     // Linked List
     LLMusic songlistLL;
@@ -57,9 +71,14 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     JPanel nextsongPane;
     JPanel playPane;
 
+    DefaultListModel<String> songModel;
+    JList<String> songList;
+    JScrollPane songListScrollPane;
 
     public void go()
     {
+	map = new ArrayList<Integer>();
+
     	artistLabel = new JLabel(artistString);
     	albumLabel = new JLabel(albumString);
     	songtitleLabel = new JLabel(songtitleString);
@@ -73,10 +92,15 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
 	imagepathField = new JTextField();
 
         artistLabel.setLabelFor(artistField);
+	artistLabel.setFont(new Font("Arial",Font.BOLD,25));
         albumLabel.setLabelFor(albumField);
+	albumLabel.setFont(new Font("Arial",Font.BOLD,25));
         songtitleLabel.setLabelFor(songtitleField);
+	songtitleLabel.setFont(new Font("Arial",Font.BOLD,25));
         filepathLabel.setLabelFor(filepathField);
+	filepathLabel.setFont(new Font("Arial",Font.BOLD,25));
 	imagepathLabel.setLabelFor(imagepathField);
+	imagepathLabel.setFont(new Font("Arial",Font.BOLD,25));
 
 	fieldPane = new JPanel(new GridLayout(0,1));
 
@@ -97,19 +121,37 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     	nextsongButton = new JButton(nextsongString);
     	playButton = new JButton(playString);
 
-    	buttonPane = new JPanel();
+    	nextsong2Button = new JButton(nextsongString);
+    	play2Button = new JButton(playString);
+
+	moveupButton = new JButton(moveupString);
+	movedownButton = new JButton(movedownString);
+
+	buttonPane = new JPanel();
+	button2Pane = new JPanel();
+	movebuttonPane = new JPanel(new GridLayout(0,1));
 
     	buttonPane.add(nextsongButton);
     	buttonPane.add(playButton);
+    	button2Pane.add(nextsong2Button);
+    	button2Pane.add(play2Button);
+	movebuttonPane.add(moveupButton);
+	movebuttonPane.add(movedownButton);
 
     	songlistLL = new LLMusic();
 
     	textArea = new JTextArea(10,20);
-    	artistField.addActionListener(this);
+	textArea.setFont(new Font("Arial", Font.HANGING_BASELINE, 20));
+
+	textPane = new JPanel(new GridLayout(0,1));
 
     	// Set ActionListener(this)
     	nextsongButton.addActionListener(new nextsongListener());
+    	nextsong2Button.addActionListener(new nextsong2Listener());
     	playButton.addActionListener(new playListener());
+    	play2Button.addActionListener(new play2Listener());
+	moveupButton.addActionListener(new moveupListener());
+	movedownButton.addActionListener(new movedownListener());
 
     	cardsPane = new JPanel(new CardLayout());
     	nextsongPane = new JPanel();
@@ -121,17 +163,30 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     	nextsongPane.add(BorderLayout.WEST, labelPane);
     	nextsongPane.add(BorderLayout.SOUTH, buttonPane);
 
-//	playPane.add(BorderLayout.CENTER, labelPane);
-//	playPane.add(BorderLayout.SOUTH, buttonPane);
+	playPane.add(BorderLayout.WEST, movebuttonPane);
+	playPane.add(BorderLayout.SOUTH, button2Pane);
+	playPane.add(BorderLayout.CENTER, textArea);
 
-    	cardsPane.add(nextsongPane,"Select");
+        songModel = new DefaultListModel<String>();
+
+      	songList = new JList<String>(songModel);
+      	songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      	songList.setSelectedIndex(0);
+      	songList.setVisibleRowCount(10);
+	songList.setFont(new Font("Arial", Font.HANGING_BASELINE, 20));
+
+      	songListScrollPane = new JScrollPane(songList);
+
+	textPane.add(textArea);
+	textPane.add(songListScrollPane);
+
+	playPane.add(BorderLayout.CENTER,textPane);
+
+	cardsPane.add(nextsongPane,"Select");
     	cardsPane.add(playPane,"Play");
 
     	this.getContentPane().add(BorderLayout.CENTER, cardsPane);
 
-//	this.getContentPane().add(BorderLayout.CENTER, fieldPane);
-//	this.getContentPane().add(BorderLayout.WEST, labelPane);
-//	this.getContentPane().add(BorderLayout.SOUTH, buttonPane);
     	this.setSize(600, 600);
     	this.setTitle("Text Window Server");
     	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -166,8 +221,9 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
 	    String albumInfo=reader.readLine();
 	    while(albumInfo!= null)
 	    {
-	        textArea.append(albumInfo+"\n");
-	    	albumInfo=reader.readLine();
+		textArea.setText(clientConn.getInetAddress().getHostAddress() + ": " + albumInfo);
+	        //textArea.append(albumInfo+"\n");
+		albumInfo=reader.readLine();
 	    }
 	}
 	catch(IOException e)
@@ -180,20 +236,22 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     {
     	public void actionPerformed(ActionEvent e)
     	{
-    	    songlistLL.songAdd(new Song(artistField.getText(),
+	    Song song = new Song(artistField.getText(),
 	        			albumField.getText(),
     					songtitleField.getText(),
-    					filepathField.getText(),
-    					imagepathField.getText()
-    					));
+    					filepathField.getText()
+    					);
 
+    	    songlistLL.songAdd(song, imagepathField.getText());
 	    artistField.setText("");
 	    albumField.setText("");
 	    songtitleField.setText("");
 	    filepathField.setText("");
 	    imagepathField.setText("");
 
+	    songModel.addElement(song.Song_Title + " by " + song.Artist);
 	    songlistLL.ll_Content();
+	    map.add(mapIndex++);
 	}
     }
 
@@ -206,19 +264,60 @@ public class ServerMusic extends JFrame implements ActionListener, Runnable{
     	}
     }
 
-    public void actionPerformed(ActionEvent e)
+    public class nextsong2Listener implements ActionListener
     {
-    	if(connected)
+    	public void actionPerformed(ActionEvent e)
     	{
-    	    writer.println(artistField.getText());
-    	    writer.flush();
-    	}
-    	else
-    	{
-	    System.out.println("The server has not established a connection yet.");
-        }
+    	    CardLayout cardLayout = (CardLayout) cardsPane.getLayout();
+    	    cardLayout.show(cardsPane, "Select");
+	}
     }
-    
+
+    public class play2Listener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+	    Song song =  songlistLL.ll_Index(map.get(songList.getLeadSelectionIndex()));
+	    System.out.println(song.Song_Title + song.Artist);
+	    if(connected)
+	    {
+		writer.println(song.Song_Title + " " + song.Artist);
+		writer.flush();
+	    }
+	    else
+	    {
+		System.out.println("The server has not established a connection yet.");
+	    }
+    	}
+    }
+
+    public class moveupListener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+	    int location = songList.getLeadSelectionIndex();
+	    if(location > 0){
+		map.add(location - 1, map.remove(location));
+		songModel.add(location - 1, songModel.remove(location));
+		//System.out.println(song.Song_Title + song.Artist);
+	    }
+    	}
+    }
+
+    public class movedownListener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+	    int location = songList.getLeadSelectionIndex();
+	    System.out.println(location + " " + mapIndex + " " + map.size());
+	    if(mapIndex - 1 > location && location > 0){
+		map.add(location + 1, map.remove(location));
+		songModel.add(location + 1, songModel.remove(location));
+		//System.out.println(song.Song_Title + song.Artist);
+	    }
+    	}
+    }
+
     public static void main(String[] args)
     {
     	ServerMusic win = new ServerMusic();
