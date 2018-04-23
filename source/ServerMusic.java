@@ -75,6 +75,12 @@ public class ServerMusic extends JFrame implements Runnable{
     JList<String> songList;
     JScrollPane songListScrollPane;
 
+    public static boolean empty( final String s ) {
+    // Null-safe, short-circuit evaluation.
+	return s == null || s.trim().isEmpty();
+    }
+
+
     public void go()
     {
 	map = new ArrayList<Integer>();
@@ -236,6 +242,27 @@ public class ServerMusic extends JFrame implements Runnable{
     {
     	public void actionPerformed(ActionEvent e)
     	{
+
+	    if(!empty(artistField.getText()){
+		artistField.setText("Not Valid");
+		return;
+	    }
+	    if(!empty(albumField.getText()){
+		artistField.setText("Not Valid");
+		return;
+	    }
+	    if(!empty(songtitleField.getText()){
+		artistField.setText("Not Valid");
+		return;
+	    }
+	    if(!empty(filepathField.getText()){
+		artistField.setText("Not Valid");
+		return;
+	    }
+	    if(!empty(imagepathField.getText()){
+		artistField.setText("Not Valid");
+		return;
+	    }
 	    Song song = new Song(artistField.getText(),
 	        			albumField.getText(),
     					songtitleField.getText(),
