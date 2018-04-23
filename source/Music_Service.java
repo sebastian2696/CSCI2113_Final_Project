@@ -31,10 +31,10 @@ public class Music_Service extends JFrame implements ActionListener
 	}
 	public void actionPerformed(ActionEvent a)
 	{
-		float[] audio = Read.audio("C:\\Users\\dljames.SEAS14991\\Downloads\\Blessings.wav");
+		float[] audio = Read.audio("/Users/goku2696/Downloads/J_Balvin_Ft__Daddy_Yankee_Don_Omar_Arcangel_Farruko_Yandel_Nicky_Jam_De_La_Ghetto___Zion_-_Ginza__Remix_.wav");
 		System.out.println("Song length  is:"+audio.length/44100+"seconds");
 		area.setText("Now Playing Blessings by Big Sean" );
-		Play.au("C:\\Users\\dljames.SEAS14991\\Downloads\\Blessings.wav");
+		Play.au("/Users/goku2696/Downloads/J_Balvin_Ft__Daddy_Yankee_Don_Omar_Arcangel_Farruko_Yandel_Nicky_Jam_De_La_Ghetto___Zion_-_Ginza__Remix_.wav");
 		this.repaint();
 	}
 	public static void main(String[] args)

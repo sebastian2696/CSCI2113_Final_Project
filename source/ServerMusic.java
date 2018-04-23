@@ -1,4 +1,11 @@
 import java.net.*;
+import jm.util.*;
+import jm.audio.*;
+import jm.JMC;
+import jm.music.tools.*;
+import jm.music.rt.*;
+import jm.music.net.*;
+import jm.music.data.*;
 import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -305,6 +312,12 @@ public class ServerMusic extends JFrame implements Runnable{
     	public void actionPerformed(ActionEvent e)
     	{
 	    Song song =  songlistLL.ll_Index(map.get(songList.getLeadSelectionIndex()));
+
+//	    float[] audio = Read.audio("/Users/goku2696/Downloads/J_Balvin_Ft__Daddy_Yankee_Don_Omar_Arcangel_Farruko_Yandel_Nicky_Jam_De_La_Ghetto___Zion_-_Ginza__Remix_.wav");
+//	    System.out.println("Song length  is:"+audio.length/44100+"seconds");
+//	    area.setText("Now Playing Blessings by Big Sean" );
+	    Play.au(song.getFile_Path());
+
 	    System.out.println(song.Song_Title + song.Artist);
 	    if(connected)
 	    {
@@ -337,7 +350,7 @@ public class ServerMusic extends JFrame implements Runnable{
     	{
 	    int location = songList.getLeadSelectionIndex();
 	    System.out.println(location + " " + mapIndex + " " + map.size());
-	    if(mapIndex - 1 > location && location > 0){
+	    if(mapIndex - 1 > location && location >= 0){
 		map.add(location + 1, map.remove(location));
 		songModel.add(location + 1, songModel.remove(location));
 		//System.out.println(song.Song_Title + song.Artist);
