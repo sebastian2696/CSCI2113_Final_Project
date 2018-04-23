@@ -243,23 +243,23 @@ public class ServerMusic extends JFrame implements Runnable{
     	public void actionPerformed(ActionEvent e)
     	{
 
-	    if(empty(artistField.getText())){
+	    if(empty(artistField.getText()) || artistField.getText().equals("Not Valid")){
 		artistField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(albumField.getText())){
+	    if(empty(albumField.getText()) || albumField.getText().equals("Not Valid")){
 		albumField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(songtitleField.getText())){
+	    if(empty(songtitleField.getText()) || songtitleField.getText().equals("Not Valid")){
 		songtitleField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(filepathField.getText())){
+	    if(empty(filepathField.getText()) || filepathField.getText().equals("Not Valid")){
 		filepathField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(imagepathField.getText())){
+	    if(empty(imagepathField.getText()) || imagepathField.getText().equals("Not Valid")){
 		imagepathField.setText("Not Valid");
 		return;
 	    }
