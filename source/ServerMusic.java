@@ -1,4 +1,8 @@
 import java.net.*;
+import jm.util.*;
+import jm.music.tools.*;
+import jm.music.rt.*;
+import jm.music.net.*;
 import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -6,6 +10,51 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import javax.swing.*;
 import java.util.*;
+import jm.util.*;
+import jm.midi.MidiSynth;
+import jm.music.data.*;
+import jm.JMC;
+import jm.audio.*;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+
+
+class Music_Service extends Play
+{
+	public Music_Service(){
+	    super();
+	}
+
+	public static void au(String fileName, boolean autoClose) {
+        jm.gui.wave.WaveFileReader afr = new jm.gui.wave.WaveFileReader(fileName);
+        jm.music.rt.RTLine[] lineArray = {new jm.util.AudioRTLine(fileName)};
+        jm.audio.RTMixer mixer = new jm.audio.RTMixer(lineArray) ;//, 4096, si.getSampleRate(), si.getChannels(), 0.01);	
+            mixer.begin();
+            System.out.println("---------- Playing '" + fileName + "'... Sample rate = "
+                               + afr.getSampleRate() + " Channels = " + afr.getChannels() + " ----------");
+            if (autoClose) {
+                java.io.File audioFile = new java.io.File(fileName);
+                try {
+                    int byteSize = afr.getBits() - 1;
+                    // bytes, sample rate, channels, milliseconds, cautious buffer
+                    Thread.sleep((int)((double)audioFile.length() / byteSize / 
+                                       afr.getSampleRate() / afr.getChannels() * 1000.0));
+                } catch (InterruptedException e) {
+		    mixer.stop();
+                    System.err.println("jMusic play.au error: Thread sleeping interupted");
+                }
+                System.out.println("-------------------- Completed Audio Playback ----------------------");
+     //           System.exit(0); // horrid, but less confusing for beginners
+            }
+    }
+
+}
+
+
 
 public class ServerMusic extends JFrame implements Runnable{
     JTextArea textArea;
@@ -17,6 +66,10 @@ public class ServerMusic extends JFrame implements Runnable{
     ServerSocket serverSock;
     boolean connected = false;
 
+    private volatile Thread t1;
+    private boolean  Trn = false;
+    Music_Service music;
+
     ArrayList<Integer> map;
     int mapIndex = 0;
 
@@ -27,12 +80,16 @@ public class ServerMusic extends JFrame implements Runnable{
     JButton play2Button;
     JButton moveupButton;
     JButton movedownButton;
+    JButton stopButton;
+    JButton randomButton;
 
     // Strings for the buttons
     private static String nextsongString = "Add Song";
     private static String playString = "Play";
     private static String moveupString = "Move Up";
     private static String movedownString = "Move Down";
+    private static String stopString = "Stop";
+    private static String randomString = "Random";
 
     // Labels to identify the fields
     JLabel artistLabel;
@@ -74,6 +131,10 @@ public class ServerMusic extends JFrame implements Runnable{
     DefaultListModel<String> songModel;
     JList<String> songList;
     JScrollPane songListScrollPane;
+
+    Song song;
+
+    boolean DEBUG = false;
 
     public static boolean empty( final String s ) {
     // Null-safe, short-circuit evaluation.
@@ -133,6 +194,9 @@ public class ServerMusic extends JFrame implements Runnable{
 	moveupButton = new JButton(moveupString);
 	movedownButton = new JButton(movedownString);
 
+	stopButton = new JButton(stopString);
+	randomButton = new JButton(randomString);
+
 	buttonPane = new JPanel();
 	button2Pane = new JPanel();
 	movebuttonPane = new JPanel(new GridLayout(0,1));
@@ -141,6 +205,8 @@ public class ServerMusic extends JFrame implements Runnable{
     	buttonPane.add(playButton);
     	button2Pane.add(nextsong2Button);
     	button2Pane.add(play2Button);
+	button2Pane.add(randomButton);
+	button2Pane.add(stopButton);
 	movebuttonPane.add(moveupButton);
 	movebuttonPane.add(movedownButton);
 
@@ -158,6 +224,8 @@ public class ServerMusic extends JFrame implements Runnable{
     	play2Button.addActionListener(new play2Listener());
 	moveupButton.addActionListener(new moveupListener());
 	movedownButton.addActionListener(new movedownListener());
+	stopButton.addActionListener(new stopListener());
+	randomButton.addActionListener(new randomListener());
 
     	cardsPane = new JPanel(new CardLayout());
     	nextsongPane = new JPanel();
@@ -194,9 +262,10 @@ public class ServerMusic extends JFrame implements Runnable{
     	this.getContentPane().add(BorderLayout.CENTER, cardsPane);
 
     	this.setSize(600, 600);
-    	this.setTitle("Text Window Server");
+    	this.setTitle("Sad Face");
     	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	this.setVisible(true);
+	music = new Music_Service();
     	setUpNetworking();
     }
 
@@ -228,7 +297,6 @@ public class ServerMusic extends JFrame implements Runnable{
 	    while(albumInfo!= null)
 	    {
 		textArea.setText(clientConn.getInetAddress().getHostAddress() + ": " + albumInfo);
-	        //textArea.append(albumInfo+"\n");
 		albumInfo=reader.readLine();
 	    }
 	}
@@ -243,23 +311,23 @@ public class ServerMusic extends JFrame implements Runnable{
     	public void actionPerformed(ActionEvent e)
     	{
 
-	    if(empty(artistField.getText()) || artistField.getText().equals("Not Valid")){
+	    if(empty(artistField.getText())){
 		artistField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(albumField.getText()) || albumField.getText().equals("Not Valid")){
+	    if(empty(albumField.getText())){
 		albumField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(songtitleField.getText()) || songtitleField.getText().equals("Not Valid")){
+	    if(empty(songtitleField.getText())){
 		songtitleField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(filepathField.getText()) || filepathField.getText().equals("Not Valid")){
+	    if(empty(filepathField.getText())){
 		filepathField.setText("Not Valid");
 		return;
 	    }
-	    if(empty(imagepathField.getText()) || imagepathField.getText().equals("Not Valid")){
+	    if(empty(imagepathField.getText())){
 		imagepathField.setText("Not Valid");
 		return;
 	    }
@@ -300,11 +368,35 @@ public class ServerMusic extends JFrame implements Runnable{
 	}
     }
 
+    public class stopListener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+	    jStop();
+	}
+    }
+
+    public class randomListener implements ActionListener
+    {
+    	public void actionPerformed(ActionEvent e)
+    	{
+	    // TBD
+	}
+    }
+
     public class play2Listener implements ActionListener
     {
     	public void actionPerformed(ActionEvent e)
     	{
-	    Song song =  songlistLL.ll_Index(map.get(songList.getLeadSelectionIndex()));
+	    song =  songlistLL.ll_Index(map.get(songList.getLeadSelectionIndex()));
+
+	    if(Trn)
+		jStop();
+	    else
+		Trn = true;
+
+	    jMusicInter();
+
 	    System.out.println(song.Song_Title + song.Artist);
 	    if(connected)
 	    {
@@ -326,7 +418,6 @@ public class ServerMusic extends JFrame implements Runnable{
 	    if(location > 0){
 		map.add(location - 1, map.remove(location));
 		songModel.add(location - 1, songModel.remove(location));
-		//System.out.println(song.Song_Title + song.Artist);
 	    }
     	}
     }
@@ -337,19 +428,61 @@ public class ServerMusic extends JFrame implements Runnable{
     	{
 	    int location = songList.getLeadSelectionIndex();
 	    System.out.println(location + " " + mapIndex + " " + map.size());
-	    if(mapIndex - 1 > location && location > 0){
+	    if(mapIndex - 1 > location && location >= 0){
 		map.add(location + 1, map.remove(location));
 		songModel.add(location + 1, songModel.remove(location));
-		//System.out.println(song.Song_Title + song.Artist);
 	    }
     	}
+    }
+    public void jMusicInter(){
+	t1 = new Thread(new Runnable() {
+	    public void run(){
+		jPlay();
+	    }
+	});
+	Trn = true;
+	t1.start();
+
+    }
+
+    public void jStop(){ // FIX ASAP
+	System.out.println(" " + Trn);
+	if(DEBUG)
+	    tHD();
+	if(Trn){
+	    Thread moribound = t1;
+	    t1 = null;
+	    moribound.interrupt();
+	    Trn = false;
+	}
+    }
+
+    public void jPlay(){
+	music.au(song.getFile_Path(),true);
+    }
+
+    public void tHD(){
+	Set<Thread> threads = Thread.getAllStackTraces().keySet();
+
+	for (Thread t : threads) {
+    	String name = t.getName();
+    	Thread.State state = t.getState();
+    	int priority = t.getPriority();
+    	String type = t.isDaemon() ? "Daemon" : "Normal";
+    	System.out.printf("%-20s \t %s \t %d \t %s\n", name, state, priority, type);
+	}
     }
 
     public static void main(String[] args)
     {
     	ServerMusic win = new ServerMusic();
+
 	win.go();
 	Thread t = new Thread(win);
 	t.start();
     }
 }
+
+
+
+
