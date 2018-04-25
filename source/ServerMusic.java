@@ -32,7 +32,7 @@ class Music_Service extends Play
 	public static void au(String fileName, boolean autoClose) {
         jm.gui.wave.WaveFileReader afr = new jm.gui.wave.WaveFileReader(fileName);
         jm.music.rt.RTLine[] lineArray = {new jm.util.AudioRTLine(fileName)};
-        jm.audio.RTMixer mixer = new jm.audio.RTMixer(lineArray) ;//, 4096, si.getSampleRate(), si.getChannels(), 0.01);	
+        jm.audio.RTMixer mixer = new jm.audio.RTMixer(lineArray) ;//, 4096, si.getSampleRate(), si.getChannels(), 0.01);
             mixer.begin();
             System.out.println("---------- Playing '" + fileName + "'... Sample rate = "
                                + afr.getSampleRate() + " Channels = " + afr.getChannels() + " ----------");
@@ -41,7 +41,7 @@ class Music_Service extends Play
                 try {
                     int byteSize = afr.getBits() - 1;
                     // bytes, sample rate, channels, milliseconds, cautious buffer
-                    Thread.sleep((int)((double)audioFile.length() / byteSize / 
+                    Thread.sleep((int)((double)audioFile.length() / byteSize /
                                        afr.getSampleRate() / afr.getChannels() * 1000.0));
                 } catch (InterruptedException e) {
 		    mixer.stop();
@@ -152,35 +152,35 @@ public class ServerMusic extends JFrame implements Runnable{
     	filepathLabel = new JLabel(filepathString);
     	imagepathLabel = new JLabel(imagepathString);
 
-	artistField = new JTextField();
-	albumField = new JTextField();
-	songtitleField = new JTextField();
-	filepathField = new JTextField();
-	imagepathField = new JTextField();
+			artistField = new JTextField();
+			albumField = new JTextField();
+			songtitleField = new JTextField();
+			filepathField = new JTextField();
+			imagepathField = new JTextField();
 
-        artistLabel.setLabelFor(artistField);
-	artistLabel.setFont(new Font("Arial",Font.BOLD,25));
-        albumLabel.setLabelFor(albumField);
-	albumLabel.setFont(new Font("Arial",Font.BOLD,25));
-        songtitleLabel.setLabelFor(songtitleField);
-	songtitleLabel.setFont(new Font("Arial",Font.BOLD,25));
-        filepathLabel.setLabelFor(filepathField);
-	filepathLabel.setFont(new Font("Arial",Font.BOLD,25));
-	imagepathLabel.setLabelFor(imagepathField);
-	imagepathLabel.setFont(new Font("Arial",Font.BOLD,25));
+      artistLabel.setLabelFor(artistField);
+			artistLabel.setFont(new Font("Arial",Font.BOLD,25));
+      albumLabel.setLabelFor(albumField);
+			albumLabel.setFont(new Font("Arial",Font.BOLD,25));
+		  songtitleLabel.setLabelFor(songtitleField);
+			songtitleLabel.setFont(new Font("Arial",Font.BOLD,25));
+      filepathLabel.setLabelFor(filepathField);
+			filepathLabel.setFont(new Font("Arial",Font.BOLD,25));
+			imagepathLabel.setLabelFor(imagepathField);
+			imagepathLabel.setFont(new Font("Arial",Font.BOLD,25));
 
-	fieldPane = new JPanel(new GridLayout(0,1));
+			fieldPane = new JPanel(new GridLayout(0,1));
 
-	fieldPane.add(artistField);
-	fieldPane.add(albumField);
-	fieldPane.add(songtitleField);
-	fieldPane.add(filepathField);
-	fieldPane.add(imagepathField);
+			fieldPane.add(artistField);
+			fieldPane.add(albumField);
+			fieldPane.add(songtitleField);
+			fieldPane.add(filepathField);
+			fieldPane.add(imagepathField);
 
-	labelPane = new JPanel(new GridLayout(0,1));
+			labelPane = new JPanel(new GridLayout(0,1));
 
-	labelPane.add(artistLabel);
-	labelPane.add(albumLabel);
+			labelPane.add(artistLabel);
+			labelPane.add(albumLabel);
     	labelPane.add(songtitleLabel);
     	labelPane.add(filepathLabel);
     	labelPane.add(imagepathLabel);
@@ -414,16 +414,17 @@ public class ServerMusic extends JFrame implements Runnable{
 	    song =  songlistLL.ll_Index(map.get(songList.getLeadSelectionIndex()));
 
 	    if(Trn)
-		jStop();
+				jStop();
 	    else
-		Trn = true;
+				Trn = true;
 
 	    jMusicInter();
+
 
 	    System.out.println(song.Song_Title + song.Artist);
 	    if(connected)
 	    {
-		writer.println(song.Song_Title + " " + song.Artist);
+		writer.println("Now Playing: " + song.Song_Title + " by " + song.Artist);
 		writer.flush();
 	    }
 	    else
@@ -505,7 +506,3 @@ public class ServerMusic extends JFrame implements Runnable{
 	t.start();
     }
 }
-
-
-
-
