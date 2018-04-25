@@ -381,6 +381,29 @@ public class ServerMusic extends JFrame implements Runnable{
     	public void actionPerformed(ActionEvent e)
     	{
 	    // TBD
+	    Random rand = new Random();
+	    int rand_int = rand.nextInt(mapIndex);
+
+	    song =  songlistLL.ll_Index(map.get(rand_int));
+
+	    if(Trn)
+		jStop();
+	    else
+		Trn = true;
+
+	    jMusicInter();
+
+	    System.out.println(song.Song_Title + song.Artist);
+	    if(connected)
+	    {
+		writer.println(song.Song_Title + " " + song.Artist);
+		writer.flush();
+	    }
+	    else
+	    {
+		System.out.println("The server has not established a connection yet.");
+	    }
+
 	}
     }
 
