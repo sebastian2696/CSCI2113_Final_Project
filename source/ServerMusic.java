@@ -280,7 +280,6 @@ public class ServerMusic extends JFrame implements Runnable{
 	    reader = new BufferedReader(isr);
 	    outWriter = new OutputStreamWriter(clientConn.getOutputStream());
 	    writer = new PrintWriter(outWriter);
-	    writer.println("This is a message from the server!!");
 	    connected = true;
 	}
         catch (IOException e)
@@ -296,7 +295,7 @@ public class ServerMusic extends JFrame implements Runnable{
 	    String albumInfo=reader.readLine();
 	    while(albumInfo!= null)
 	    {
-		textArea.setText(clientConn.getInetAddress().getHostAddress() + ": " + albumInfo);
+		textArea.setText(": " + albumInfo);
 		albumInfo=reader.readLine();
 	    }
 	}
